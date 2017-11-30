@@ -1,29 +1,25 @@
 #!/usr/bin/env python
 
 from argparse import ArgumentParser
-from Queue import Empty
 from multiprocessing import Process, Queue, Value, cpu_count
-
+from Queue import Empty
+import logging
+import os
+import random
 import requests
 import shutil
-import urllib
-import sys
 import signal
-import random
-import os
+import sys
+import urllib
 
-import logging
-
-from urlparse import urljoin
-from bs4 import BeautifulSoup
 
 DEF_API_BASE = 'http://index.commoncrawl.org/'
 
 
 def get_index_urls(url):
-    response = requests.get(url)
-    soup = BeautifulSoup(response.text, "lxml")
-    return [urljoin(url, a.attrs.get("href") + "-index") for a in soup.select("a") if "/CC-MAIN-" in a.attrs.get("href")]
+    response = requests.get(url + 'collinfo.json')
+    collections = response.json()
+    return [coll['cdx-api'] for coll in collections]
 
 
 def get_num_pages(api_url, url, page_size=None):
